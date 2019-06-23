@@ -8,6 +8,14 @@ FROM CITY
 WHERE COUNTRYCODE ='USA'
 AND POPULATION > 100000;
 
+/* Revising the Select Query II
+Query the names of all American cities in CITY with populations larger than 120000. The CountryCode for America is USA. */
+
+select NAME
+from CITY
+where POPULATION > 120000
+and COUNTRYCODE = 'USA';
+
 /* Weather Observation Station 6
 Query the list of CITY names starting with vowels (i.e., a, e, i, o, or u) from STATION. Your result cannot contain duplicates.*/
 
