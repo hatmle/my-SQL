@@ -60,3 +60,67 @@ SELECT article, dealer, price
 FROM shop
 ORDER BY price DESC
 LIMIT 1;
+
+-- 3. Find the highest price per article.
+SELECT article, MAX(price) AS price
+FROM   shop
+GROUP BY article
+ORDER BY article;
+                
++---------+-------+
+| article | price |
++---------+-------+
+|    0001 |  3.99 |
+|    0002 | 10.99 |
+|    0003 |  1.69 |
+|    0004 | 19.95 |
++---------+-------+
+
+-- 4. For each article, find the dealer or dealers with the most expensive price.
+SELECT article, dealer, price
+FROM   shop s1
+WHERE  price=(SELECT MAX(s2.price)
+              FROM shop s2
+              WHERE s1.article = s2.article)
+ORDER BY article;
+                
++---------+--------+-------+
+| article | dealer | price |
++---------+--------+-------+
+|    0001 | B      |  3.99 |
+|    0002 | A      | 10.99 |
+|    0003 | C      |  1.69 |
+|    0004 | D      | 19.95 |
++---------+--------+-------+
+-- The query uses a correlated subquery, which can be inefficient.
+
+-- Other possibilities for solving the problem are to use an uncorrelated subquery in the FROM clause or a LEFT JOIN.
+-- Uncorrelated subquery:                
+SELECT s1.article, dealer, s1.price
+FROM shop s1
+JOIN (
+  SELECT article, MAX(price) AS price
+  FROM shop
+  GROUP BY article) AS s2
+  ON s1.article = s2.article AND s1.price = s2.price
+ORDER BY article;
+
+-- Left join
+SELECT s1.article, s1.dealer, s1.price
+FROM shop s1
+LEFT JOIN shop s2 ON s1.article = s2.article AND s1.price < s2.price
+WHERE s2.article IS NULL
+ORDER BY s1.article;
+
+-- 5. Find the articles with the highest and lowest price                
+mysql> SELECT @min_price:=MIN(price),@max_price:=MAX(price) FROM shop;
+mysql> SELECT * FROM shop WHERE price=@min_price OR price=@max_price;
+
+-- Using User-Defined Variables
+-- You can employ MySQL user variables to remember results without having to store them in temporary variables in the client.                
++---------+--------+-------+
+| article | dealer | price |
++---------+--------+-------+
+|    0003 | D      |  1.25 |
+|    0004 | D      | 19.95 |
++---------+--------+-------+                
