@@ -11,3 +11,4 @@
 # Exercises
 - computer-store-db
 - sakila-db
+- shop-db
