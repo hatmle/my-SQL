@@ -124,3 +124,119 @@ mysql> SELECT * FROM shop WHERE price=@min_price OR price=@max_price;
 |    0003 | D      |  1.25 |
 |    0004 | D      | 19.95 |
 +---------+--------+-------+                
+
+-- 6. Using Foreign Keys
+CREATE TABLE person (
+    id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    name CHAR(60) NOT NULL,
+    PRIMARY KEY (id)
+);
+                
+CREATE TABLE shirt (
+    id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    style ENUM('t-shirt', 'polo', 'dress') NOT NULL,
+    color ENUM('red', 'blue', 'orange', 'white', 'black') NOT NULL,
+    owner SMALLINT UNSIGNED NOT NULL REFERENCES person(id),
+    PRIMARY KEY (id)
+);
+                
+INSERT INTO person VALUES (NULL, 'Antonio Paz');
+SELECT @last := LAST_INSERT_ID();
+                
+INSERT INTO shirt VALUES
+(NULL, 'polo', 'blue', @last),
+(NULL, 'dress', 'white', @last),
+(NULL, 't-shirt', 'blue', @last);
+                
+INSERT INTO person VALUES (NULL, 'Lilliana Angelovska');
+SELECT @last := LAST_INSERT_ID();
+                
+INSERT INTO shirt VALUES
+(NULL, 'dress', 'orange', @last),
+(NULL, 'polo', 'red', @last),
+(NULL, 'dress', 'blue', @last),
+(NULL, 't-shirt', 'white', @last);
+                
+SELECT * FROM person;
++----+---------------------+
+| id | name                |
++----+---------------------+
+|  1 | Antonio Paz         |
+|  2 | Lilliana Angelovska |
++----+---------------------+
+                
+SELECT * FROM shirt;
++----+---------+--------+-------+
+| id | style   | color  | owner |
++----+---------+--------+-------+
+|  1 | polo    | blue   |     1 |
+|  2 | dress   | white  |     1 |
+|  3 | t-shirt | blue   |     1 |
+|  4 | dress   | orange |     2 |
+|  5 | polo    | red    |     2 |
+|  6 | dress   | blue   |     2 |
+|  7 | t-shirt | white  |     2 |
++----+---------+--------+-------+
+                
+SELECT s.* FROM person p INNER JOIN shirt s
+   ON s.owner = p.id
+ WHERE p.name LIKE 'Lilliana%'
+   AND s.color <> 'white';
++----+-------+--------+-------+
+| id | style | color  | owner |
++----+-------+--------+-------+
+|  4 | dress | orange |     2 |
+|  5 | polo  | red    |     2 |
+|  6 | dress | blue   |     2 |
++----+-------+--------+-------+                
+
+-- 7. Searching on Two Keys                
+SELECT field1_index, field2_index FROM test_table
+WHERE field1_index = '1' OR  field2_index = '1'
+
+SELECT field1_index, field2_index
+    FROM test_table WHERE field1_index = '1'
+UNION
+SELECT field1_index, field2_index
+    FROM test_table WHERE field2_index = '1';
+
+-- 8. Calculating Visits Per Day    
+-- Table contains year-month-day values representing visits by users to the page                
+CREATE TABLE t1 (year YEAR(4), month INT UNSIGNED,
+             day INT UNSIGNED);
+INSERT INTO t1 VALUES(2000,1,1),(2000,1,20),(2000,1,30),(2000,2,2),
+            (2000,2,23),(2000,2,23);    
+
+-- determine how many different days in each month these visits occur                
+SELECT year,month,BIT_COUNT(BIT_OR(1<<day)) AS days FROM t1
+       GROUP BY year,month;                
+
++------+-------+------+
+| year | month | days |
++------+-------+------+
+| 2000 |     1 |    3 |
+| 2000 |     2 |    2 |
++------+-------+------+
+
+-- 9. Using AUTO_INCREMENT
+-- The AUTO_INCREMENT attribute can be used to generate a unique identity for new rows:                                   
+CREATE TABLE animals (
+     id MEDIUMINT NOT NULL AUTO_INCREMENT,
+     name CHAR(30) NOT NULL,
+     PRIMARY KEY (id)
+);
+INSERT INTO animals (name) VALUES
+    ('dog'),('cat'),('penguin'),
+    ('lax'),('whale'),('ostrich');
+SELECT * FROM animals;
+
++----+---------+
+| id | name    |
++----+---------+
+|  1 | dog     |
+|  2 | cat     |
+|  3 | penguin |
+|  4 | lax     |
+|  5 | whale   |
+|  6 | ostrich |
++----+---------+                                   
